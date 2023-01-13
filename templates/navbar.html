@@ -1,0 +1,25 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'photos' %}">Photo Manager</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler02"
+                aria-controls="navbarToggler02" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse flex-row-reverse" id="navbarToggler02">
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item me-3">
+                        <a class="nav-link active" href="{% url 'add_photo' %}">Add a photo</a>
+                    </li>
+                    <li class="nav-item me-1 align-self-center">
+                        <a class="btn btn-sm btn-danger" href="{% url 'logout' %}">Log out</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item me-1">
+                        <a href="{% url 'login' %}" class="btn btn-sm btn-danger">Log In</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}Photo Details{% endblock %}
+
+{% block body %}
+    <div class="mx-auto">
+        <p class="text-center fw-light">Uploaded on: {{ photo.created_at }}</p>
+    </div>
+    <div class="row pb-5">
+        <div class="col-md-8">
+            <img src="{{ photo.image.url }}" alt="Photo_{{ photo.id }}" width="100%" />
+        </div>
+        <div class="col-md-4">
+            <h4>Details</h4>
+            {% if photo.geolocation %}<p class="text-muted">{{ photo.geolocation }}</p>{% endif %}
+            {% if photo.description %}<p>{{ photo.description }}</p>{% endif %}
+            {% if photo.mention_users.exists %}
+                <div class="d-flex align-content-start flex-wrap my-4">
+                     {% for mention_user in photo.mention_users.all %}
+                         <div class="border">
+                             <a href="#"
+                                class="btn btn">{{ mention_user.username|title }}</a>
+                         </div>
+                     {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

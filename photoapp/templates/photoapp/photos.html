@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% load crispy_forms_filters %}
+
+{% block title %}Photos{% endblock %}
+
+{% block body %}
+    <button class="btn border btm-sm w-100 mb-4" onclick="displaySearchBar()">Filter</button>
+
+    {# Search bar #}
+    <div class="form-group mb-5" id="id_search_bar" style="display: none">
+        <form action="" method="get">
+            <div class="row form-row">
+                <div class="col-md-4">{{ search_form.geolocation|as_crispy_field }}</div>
+                <div class="col-md-4">{{ search_form.created_at|as_crispy_field }}</div>
+                <div class="col-md-4">{{ search_form.mention_user|as_crispy_field }}
+                    {# Dropdown list #}
+                    <div id="mention_users_list"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-10"><button type="submit" class="btn btn-secondary w-100">Search</button></div>
+                <div class="col-2"><a href="{% url 'photos' %}" class="btn btn-outline-secondary w-100">Clean</a></div>
+            </div>
+        </form>
+    </div>
+
+    <div class="row">
+        {% for photo in photos %}
+            <div class="col-lg-2 col-md-3 col-xs-6 px-1">
+                <a href="{% url 'photo_details' photo.id %}" class="d-block mb-4 h-100">
+                    <img src="{{ photo.image.url }}" class="img-fluid rounded" alt="Photo_{{ photo.id }}" />
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    <div id="data"></div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        function displaySearchBar() {
+            // Expands the search bar when the button is clicked
+            let x = document.getElementById("id_search_bar");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+        function CapitalizeFirstWordLetter(str) {
+            // Capitalize the first letter for each word.
+            const arr = str.split(" ");
+            for (let i = 0; i < arr.length; i++) {
+                arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+
+            }
+            return arr.join(" ");
+        }
+
+        function fillInInput(obj) {
+            // Fill in Input field by clicking a "listContainer" link and hide dropdown list.
+            document.getElementById('id_mention_user').value = obj.text;
+            document.getElementById('mention_users_list').style.display = "none";
+        }
+
+        $(document).ready(function(){
+            $('#id_mention_user').keyup(function () {
+                $.ajax({
+                    data: {username: $(this).val()},
+                    url: '{% url "mention_users_api" %}',
+                    success: function(data) {
+                        let listContainer = document.getElementById('mention_users_list');
+                        // Remove all element inside "mention_users_list"
+                        while (listContainer.firstChild) {
+                            listContainer.removeChild(listContainer.firstChild);
+                        }
+
+                        // Create new elements inside "mention_users_list" for ajax data
+                        data.forEach((user)=>{
+                            let a = document.createElement("a");
+                            a.innerText = CapitalizeFirstWordLetter(user.username);
+                            a.classList.add("listItem");
+                            a.setAttribute("onclick", "fillInInput(this)");
+                            a.setAttribute("href", "#");
+                            listContainer.appendChild(a);
+                        })
+
+                        // Display list of mention users if exists
+                        let input = document.getElementById('id_mention_user').value;
+                        input = input.toLowerCase()
+                        let listItems = document.getElementsByClassName('listItem');
+                        let noResults = true;
+                        for (let i = 0; i < listItems.length; i++) {
+                            if (!listItems[i].innerHTML.toLowerCase().includes(input) || input === "") {
+                                listItems[i].style.display="none";
+                            }
+                            else {
+                                listItems[i].style.display="flex";
+                                noResults = false;
+                            }
+                        }
+                        listContainer.style.display = noResults ? "none" : "inline-block";
+                    },
+                    error: function(error) {
+                        console.log(error.status, error.responseText);
+                    }
+                });
+                return false;
+            });
+        })
+    </script>
+{% endblock %}
+
+{% block style %}
+    <style>
+        #mention_users_list {
+            border: 1px solid lightgrey;
+            border-radius: 3px;
+            display: none;
+            background-color: white;
+            position: absolute;
+            width: 300px;
+        }
+        .listItem {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            padding: 5px 20px;
+            color: black;
+        }
+        .listItem:hover {
+            background-color: lightgrey;
+        }
+    </style>
+{% endblock %}
